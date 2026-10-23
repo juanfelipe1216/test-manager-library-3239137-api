@@ -14,6 +14,7 @@ use App\Application\Services\CreateBookService;
 use App\Application\Services\CreateLibrarianService;
 use App\Application\Services\CreateMemberService;
 use App\Application\Services\DeleteBookService;
+use App\Application\Services\DeleteMemberService;
 use App\Application\Services\LendBooksService;
 use App\Application\Services\ReturnItemService;
 use App\Application\Services\UpdateBookService;
@@ -107,6 +108,14 @@ final class LibraryController
         return response()->json($service->execute((string) Str::uuid(), $data), 201);
     }
 
+    public function deleteMember(string $id, DeleteMemberService $service)
+    {
+        $this->uuid($id);
+        $service->execute($id);
+
+        return response()->noContent();
+    }
+
     public function lend(Request $r, LendBooksService $service)
     {
         $data = $r->validate(['member_id' => 'required|uuid', 'items' => 'required|array|min:1|max:3', 'items.*.book_id' => 'required|uuid']);
@@ -179,9 +188,9 @@ final class LibraryController
         $key = $books->get($id)['response']['cover_key'];
         $file = $key === null ? null : $storage->read($key);
         if (! $file) {
-            throw new BusinessError('NOT_FOUND','Portada no encontrada.',404);
+            throw new BusinessError('NOT_FOUND', 'Portada no encontrada.', 404);
         }
 
-        return response($file['bytes'],200,['Content-Type' => $file['mime']]);
+        return response($file['bytes'], 200, ['Content-Type' => $file['mime']]);
     }
 }

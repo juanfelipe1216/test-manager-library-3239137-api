@@ -65,3 +65,8 @@ Smoke usa credenciales del entorno sin imprimirlas. Crea registros
 de prueba, no elimina historial. Reporte por valores congelados;
 existencias con comparación xmin y transacciones.
 Portadas en storage/app/covers, nunca en la base de datos.
+
+Extensión solicitada: DELETE /api/v1/members/{id}, solo admin.
+Devuelve 204 al eliminar un socio sin préstamos; 409 MEMBER_HAS_LOANS
+si existe cualquier préstamo, incluso devuelto; 404 si no existe.
+Comparte el bloqueo transaccional por socio con el registro de préstamos.

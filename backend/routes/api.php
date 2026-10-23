@@ -68,12 +68,13 @@ Route::middleware(ApiAuth::class)->group(function () {
     Route::post('/loans', [$controller, 'lend']);
     Route::post('/loans/{loanId}/items/{itemId}/return', [$controller, 'returnItem']);
     Route::middleware(ApiAuth::class.':admin')->group(function () use ($controller) {
+        Route::delete('/members/{id}', [$controller, 'deleteMember']);
         Route::post('/users', [$controller, 'createUser']);
         Route::post('/books', [$controller, 'createBook']);
         Route::put('/books/{id}', [$controller, 'updateBook']);
         Route::delete('/books/{id}', [$controller, 'deleteBook']);
         Route::put('/books/{id}/cover', [$controller, 'setCover']);
         Route::delete('/books/{id}/cover', [$controller, 'deleteCover']);
-        Route::get('/reports/most-borrowed',[$controller, 'report']);
+        Route::get('/reports/most-borrowed', [$controller, 'report']);
     });
 });

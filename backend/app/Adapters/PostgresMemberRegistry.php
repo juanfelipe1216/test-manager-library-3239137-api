@@ -17,6 +17,7 @@ final class PostgresMemberRegistry implements MemberRegistry
         }
 
         return ['id' => $r->id, 'full_name' => $r->full_name, 'document_number' => $r->document_number,
+            'loans_count' => DB::table('library.loan')->where('member_id', $id)->count(),
             'active_loans' => DB::table('library.loan_item as i')->join('library.loan as l', 'l.id', '=', 'i.loan_id')->where('l.member_id', $id)->whereNull('i.returned_at')->count()];
     }
 
@@ -29,6 +30,11 @@ final class PostgresMemberRegistry implements MemberRegistry
     {
         DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [$id]);
         $this->get($id);
+    }
+
+    public function delete(string $id): void
+    {
+        DB::table('library.member')->where('id', $id)->delete();
     }
 
     public function search(array $f): array

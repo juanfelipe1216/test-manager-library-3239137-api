@@ -12,5 +12,7 @@ interface MemberRegistry
 
     public function create(Member $member): void;
 
+    public function delete(string $id): void;
+
     public function lock(string $id): void;
 }
