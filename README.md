@@ -48,3 +48,20 @@ No hay prórroga: suban avances parciales con commits pequeños durante la prueb
 | [`test-manager-library-3239137-page`](https://github.com/code-sena/test-manager-library-3239137-page) | Sitio público estático de presentación |
 | [`test-manager-library-3239137-infra`](https://github.com/code-sena/test-manager-library-3239137-infra) | Contenedores, red, volúmenes y motor de base de datos vacío |
 | [`test-manager-library-3239137-tool`](https://github.com/code-sena/test-manager-library-3239137-tool) | Utilidades: sembrador de datos de demostración |
+
+## Backend implementado
+Laravel 12 / PHP 8.4. Domain: reglas puras. Application: puertos y
+casos de uso. Adapters: PostgreSQL, reloj, seguridad y almacenamiento.
+AppServiceProvider conecta las implementaciones.
+
+Consultar ARRANQUE.md en el repositorio infra. Las migraciones de ejemplo
+están apartadas en database/migrations-reference y no se ejecutan.
+
+Desde infra:
+- docker compose exec api php artisan test --compact
+- docker compose exec api php tests/smoke.php
+
+Smoke usa credenciales del entorno sin imprimirlas. Crea registros
+de prueba, no elimina historial. Reporte por valores congelados;
+existencias con comparación xmin y transacciones.
+Portadas en storage/app/covers, nunca en la base de datos.

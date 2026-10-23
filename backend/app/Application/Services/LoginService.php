@@ -22,7 +22,7 @@ final class LoginService
 
         if (
             $user === null ||
-            !$this->passwords->verify($password, $user->passwordHash())
+            ! $this->passwords->verify($password, $user->passwordHash())
         ) {
             throw new DomainException('Credenciales inválidas.');
         }
