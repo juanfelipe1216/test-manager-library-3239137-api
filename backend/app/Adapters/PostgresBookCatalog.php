@@ -25,7 +25,12 @@ final class PostgresBookCatalog implements BookCatalog
 
     public function categories(): array
     {
-        return DB::table('library.category')->orderBy('name')->get()->map(fn ($r) => (array) $r)->all();
+        return DB::table('library.category as c')->select('c.id', 'c.name')
+            ->selectSub(function ($query) {
+                $query->from('library.book as b')->selectRaw('COUNT(*)::integer')
+                    ->whereColumn('b.category_id', 'c.id')->whereNull('b.deleted_at');
+            }, 'book_count')
+            ->orderBy('c.name')->get()->map(fn ($r) => (array) $r)->all();
     }
 
     public function get(string $id): array
@@ -42,9 +47,13 @@ final class PostgresBookCatalog implements BookCatalog
     public function search(array $filters): array
     {
         $q = $this->query();
-        if (! empty($filters['q'])) {
-            $q->where(function ($q) use ($filters) {
-                $q->where('b.title', 'ilike', '%'.$filters['q'].'%')->orWhere('b.author', 'ilike', '%'.$filters['q'].'%');
+        $term = trim((string) ($filters['q'] ?? ''));
+        if ($term !== '') {
+            $term = strtr($term, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n', 'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Ü' => 'U', 'Ñ' => 'N']);
+            $term = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+            $q->where(function ($query) use ($term) {
+                $query->whereRaw("translate(b.title, 'ÁÉÍÓÚÜÑáéíóúüñ', 'AEIOUUNaeiouun') ILIKE ?", ['%'.$term.'%'])
+                    ->orWhereRaw("translate(b.author, 'ÁÉÍÓÚÜÑáéíóúüñ', 'AEIOUUNaeiouun') ILIKE ?", ['%'.$term.'%']);
             });
         }
         if (! empty($filters['category_id'])) {
@@ -88,7 +97,7 @@ final class PostgresBookCatalog implements BookCatalog
         $count = DB::table('library.book')->where('id', $book->id)->whereNull('deleted_at')
             ->whereRaw('xmin::text = ?', [$original['version']])->update($data);
         if ($count !== 1) {
-            throw new BusinessError('BOOK_NOT_AVAILABLE','Las existencias cambiaron; vuelve a intentarlo.',409);
+            throw new BusinessError('BOOK_NOT_AVAILABLE', 'Las existencias cambiaron; vuelve a intentarlo.', 409);
         }
     }
 }
